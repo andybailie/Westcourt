@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Audio-Visual Gallery</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: sans-serif;
+        }
+        #ui-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui-overlay">
+        <strong>Controls:</strong><br>
+        ⬆️ ⬇️ : Move Forward / Backward<br>
+        ⬅️ ➡️ : Rotate Left / Right<br>
+        🖱️ : Click green buttons to play audio
+    </div>
+
+    <script type="module">
+        import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+
+        // ==========================================
+        // 1. GALLERY DATA CONFIGURATION
+        // ==========================================
+        // Ensure your actual files match these names and folder locations perfectly
+        const galleryItems = [
+            {
+                image: "images/rosemount.jpg",
+                text: "Exhibit 1\n\nCommercial Narration.\n\nA warm, authoritative read tailored for corporate broadcasting and brand anthems.",
+                audio: "audio/audio1.m4a"
+            },
+            {
+                image: "images/r1.png",
+                text: "Exhibit 2\n\nCharacter Voice.\n\nDeep and gravelly tone suitable for video game antagonists or dramatic storytelling.",
+                audio: "audio/audio2.m4a"
+            },
+            {
+                image: "images/street.png",
+                text: "Exhibit 3\n\nE-Learning Module.\n\nClear, paced, and articulate delivery to guide listeners through complex technical concepts.",
+                audio: "audio/track_3.mp3"
+            },
+            {
+                image: "images/transfer.jpg",
+                text: "Exhibit 4\n\nDocumentary Read.\n\nNatural, resonant Northern Irish delivery for long-form factual content and nature programming.",
+                audio: "audio/track_4.mp3"
+            },
+            {
+                image: "images/image_5.jpg",
+                text: "Exhibit 5\n\nAudiobook Sample - Fiction.\n\nDynamic pacing showcasing emotional range and subtle character distinctions.",
+                audio: "audio/track_5.mp3"
+            },
+            {
+                image: "images/image_6.jpg",
+                text: "Exhibit 6\n\nRadio Imaging.\n\nPunchy, high-energy sweepers and station idents to cut through the mix.",
+                audio: "audio/track_6.mp3"
+            },
+            {
+                image: "images/image_7.jpg",
+                text: "Exhibit 7\n\nAnimation Voiceover.\n\nExaggerated and expressive vocal performance designed for animated shorts.",
+                audio: "audio/track_7.mp3"
+            },
+            {
+                image: "images/image_8.jpg",
+                text: "Exhibit 8\n\nPodcast Intro.\n\nInviting and professional establishing tone to hook listeners in the first ten seconds.",
+                audio: "audio/track_8.mp3"
+            },
+            {
+                image: "images/image_9.jpg",
+                text: "Exhibit 9\n\nMedical Narration.\n\nPrecise pronunciation and measured delivery for clinical or pharmaceutical scripts.",
+                audio: "audio/track_9.mp3"
+            },
+            {
+                image: "images/image_10.jpg",
+                text: "Exhibit 10\n\nPromo Read.\n\nUrgent, intense style perfect for upcoming event trailers and television promos.",
+                audio: "audio/track_10.mp3"
+            },
+            {
+                image: "images/image_11.jpg",
+                text: "Exhibit 11\n\nExplainer Video.\n\nFriendly, conversational approach that makes dry information accessible and engaging.",
+                audio: "audio/track_11.mp3"
+            },
+            {
+                image: "images/image_12.jpg",
+                text: "Exhibit 12\n\nTheatrical Trailer.\n\nMaximum resonance and gravitas for cinematic theatrical releases.",
+                audio: "audio/track_12.mp3"
+            }
+        ];
+
+        // ==========================================
+        // 2. SCENE SETUP
+        // ==========================================
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x333333); 
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 1.6, 0); 
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+        scene.add(ambientLight);
+        
+        const pointLight = new THREE.PointLight(0xffffee, 1.5, 50);
+        pointLight.position.set(0, 10, 0);
+        scene.add(pointLight);
+
+        // ==========================================
+        // 3. ENVIRONMENT & ROOM
+        // ==========================================
+        const roomSize = 40;
+        const textureLoader = new THREE.TextureLoader();
+        
+        const roomGeometry = new THREE.BoxGeometry(roomSize, 12, roomSize);
+        
+        const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x888888, side: THREE.BackSide });
+        const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x555555, side: THREE.BackSide });
+        const ceilingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.BackSide });
+        
+        const roomMaterials = [
+            wallMaterial, wallMaterial, ceilingMaterial, floorMaterial, wallMaterial, wallMaterial
+        ];
+        const room = new THREE.Mesh(roomGeometry, roomMaterials);
+        room.position.y = 6; 
+        scene.add(room);
+
+        // ==========================================
+        // 4. EASEL GENERATOR (With Word Wrap)
+        // ==========================================
+        function createTextTexture(text) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 512, 512);
+            
+            // Font Settings
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 28px sans-serif'; 
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            
+            const maxWidth = 460; 
+            const lineHeight = 36;
+            let y = 40; 
+
+            const paragraphs = text.split('\n');
+            
+            paragraphs.forEach(paragraph => {
+                const words = paragraph.split(' ');
+                let currentLine = '';
+
+                for (let n = 0; n < words.length; n++) {
+                    const testLine = currentLine + words[n] + ' ';
+                    const metrics = ctx.measureText(testLine);
+                    const testWidth = metrics.width;
+                    
+                    if (testWidth > maxWidth && n > 0) {
+                        ctx.fillText(currentLine, 256, y);
+                        currentLine = words[n] + ' ';
+                        y += lineHeight;
+                    } else {
+                        currentLine = testLine;
+                    }
+                }
+                ctx.fillText(currentLine, 256, y);
+                y += lineHeight; 
+            });
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            return texture;
+        }
+
+        const easels = new THREE.Group();
+        scene.add(easels);
+
+        const positions = [
+            { x: -10, z: -18, rotY: 0 }, { x: 0, z: -18, rotY: 0 }, { x: 10, z: -18, rotY: 0 },
+            { x: 10, z: 18, rotY: Math.PI }, { x: 0, z: 18, rotY: Math.PI }, { x: -10, z: 18, rotY: Math.PI },
+            { x: 18, z: -10, rotY: -Math.PI/2 }, { x: 18, z: 0, rotY: -Math.PI/2 }, { x: 18, z: 10, rotY: -Math.PI/2 },
+            { x: -18, z: 10, rotY: Math.PI/2 }, { x: -18, z: 0, rotY: Math.PI/2 }, { x: -18, z: -10, rotY: Math.PI/2 }
+        ];
+
+        galleryItems.forEach((data, i) => {
+            const pos = positions[i];
+            const easelGroup = new THREE.Group();
+            
+            const imgGeo = new THREE.PlaneGeometry(3, 3);
+            const imgMat = new THREE.MeshBasicMaterial({ 
+                map: textureLoader.load(data.image),
+                side: THREE.DoubleSide
+            });
+            const imgMesh = new THREE.Mesh(imgGeo, imgMat);
+            imgMesh.position.set(-2, 2.5, 0);
+            
+            const borderGeo = new THREE.BoxGeometry(3.2, 3.2, 0.1);
+            const borderMat = new THREE.MeshStandardMaterial({ color: 0x2a1610 });
+            const borderMesh = new THREE.Mesh(borderGeo, borderMat);
+            borderMesh.position.set(-2, 2.5, -0.06);
+
+            const textGeo = new THREE.PlaneGeometry(2, 2.5);
+            const textMat = new THREE.MeshBasicMaterial({ map: createTextTexture(data.text) });
+            const textMesh = new THREE.Mesh(textGeo, textMat);
+            textMesh.position.set(1.5, 2.75, 0);
+            
+            const textBorder = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.7, 0.1), borderMat);
+            textBorder.position.set(1.5, 2.75, -0.06);
+
+            const btnGeo = new THREE.BoxGeometry(1.5, 0.5, 0.2);
+            const btnMat = new THREE.MeshStandardMaterial({ color: 0x28a745 });
+            const btnMesh = new THREE.Mesh(btnGeo, btnMat);
+            btnMesh.position.set(1.5, 1, 0);
+            
+            btnMesh.userData = { 
+                isAudioButton: true, 
+                audioUrl: data.audio 
+            };
+
+            easelGroup.add(imgMesh);
+            easelGroup.add(borderMesh);
+            easelGroup.add(textMesh);
+            easelGroup.add(textBorder);
+            easelGroup.add(btnMesh);
+            
+            easelGroup.position.set(pos.x, 0, pos.z);
+            easelGroup.rotation.y = pos.rotY;
+            
+            easels.add(easelGroup);
+        });
+
+        // ==========================================
+        // 5. INTERACTION 
+        // ==========================================
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let currentAudio = null;
+
+        window.addEventListener('click', (event) => {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(easels.children, true);
+
+            const clickedButton = intersects.find(i => i.object.userData.isAudioButton);
+
+            if (clickedButton) {
+                const url = clickedButton.object.userData.audioUrl;
+                
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                }
+                
+                const originalColor = clickedButton.object.material.color.getHex();
+                clickedButton.object.material.color.setHex(0xffffff);
+                setTimeout(() => clickedButton.object.material.color.setHex(originalColor), 200);
+
+                currentAudio = new Audio(url);
+                currentAudio.play().catch(e => console.log("Audio playback requires a valid file path.", e));
+            }
+        });
+
+        window.addEventListener('mousemove', (event) => {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(easels.children, true);
+            const hovering = intersects.some(i => i.object.userData.isAudioButton);
+            document.body.style.cursor = hovering ? 'pointer' : 'default';
+        });
+
+        // ==========================================
+        // 6. MOVEMENT CONTROLS
+        // ==========================================
+        const keys = { w: false, a: false, s: false, d: false };
+        const moveSpeed = 0.15;
+        const turnSpeed = 0.03;
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') keys.w = true;
+            if (e.key === 'ArrowDown') keys.s = true;
+            if (e.key === 'ArrowLeft') keys.a = true;
+            if (e.key === 'ArrowRight') keys.d = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowUp') keys.w = false;
+            if (e.key === 'ArrowDown') keys.s = false;
+            if (e.key === 'ArrowLeft') keys.a = false;
+            if (e.key === 'ArrowRight') keys.d = false;
+        });
+
+        // ==========================================
+        // 7. RENDER LOOP
+        // ==========================================
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (keys.w) camera.translateZ(-moveSpeed);
+            if (keys.s) camera.translateZ(moveSpeed);
+            if (keys.a) camera.rotation.y += turnSpeed;
+            if (keys.d) camera.rotation.y -= turnSpeed;
+
+            if (camera.position.x > 18) camera.position.x = 18;
+            if (camera.position.x < -18) camera.position.x = -18;
+            if (camera.position.z > 18) camera.position.z = 18;
+            if (camera.position.z < -18) camera.position.z = -18;
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
