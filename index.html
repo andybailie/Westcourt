@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Audio-Visual Gallery (Quest 3 Ready)</title>
+    <title>3D Audio-Visual Gallery (Textured & Quest 3 Ready)</title>
     <style>
         body {
             margin: 0;
@@ -79,7 +79,6 @@
         🔙 <strong>Exit VR:</strong> Press Menu (☰), X, or Y on Left Controller
     </div>
 
-    <!-- On-Screen D-Pad -->
     <div id="mobile-controls">
         <div class="dir-btn" id="btn-up">⬆️</div>
         <div class="control-row">
@@ -115,7 +114,7 @@
         // 2. SCENE SETUP & PLAYER RIG
         // ==========================================
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x333333); 
+        scene.background = new THREE.Color(0x111111); // Darkened background slightly for contrast
         
         const playerRig = new THREE.Group();
         playerRig.position.set(0, 1.2, 0); 
@@ -140,15 +139,45 @@
         scene.add(pointLight);
 
         // ==========================================
-        // 3. ENVIRONMENT & ROOM
+        // 3. ENVIRONMENT & ROOM (Now with Textures!)
         // ==========================================
         const roomSize = 40;
         const textureLoader = new THREE.TextureLoader();
         
+        // Load the Wall Texture
+        const wallTexture = textureLoader.load('images/wall.jpg');
+        wallTexture.wrapS = THREE.RepeatWrapping;
+        wallTexture.wrapT = THREE.RepeatWrapping;
+        // The first number is horizontal repeats (wrap around the 4 walls).
+        // The second number is vertical repeats (height of the wall).
+        // Adjust these numbers if your texture looks stretched or too small!
+        wallTexture.repeat.set(8, 2); 
+
+        // Load the Floor Texture
+        const floorTexture = textureLoader.load('images/floor.jpg');
+        floorTexture.wrapS = THREE.RepeatWrapping;
+        floorTexture.wrapT = THREE.RepeatWrapping;
+        // 40x40 meter floor, so repeating 10x10 means each tile is 4x4 meters.
+        floorTexture.repeat.set(10, 10); 
+
         const roomGeometry = new THREE.BoxGeometry(roomSize, 12, roomSize);
-        const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x888888, side: THREE.BackSide });
-        const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x555555, side: THREE.BackSide });
-        const ceilingMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.BackSide });
+        
+        // Apply textures to materials. 
+        // We set a white base color so the image shows in its natural color.
+        const wallMaterial = new THREE.MeshStandardMaterial({ 
+            map: wallTexture,
+            color: 0xffffff, 
+            side: THREE.BackSide 
+        });
+        const floorMaterial = new THREE.MeshStandardMaterial({ 
+            map: floorTexture,
+            color: 0xcccccc, // Slightly dimmed base color for the floor
+            side: THREE.BackSide 
+        });
+        const ceilingMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x222222, // Kept the ceiling a flat dark color so it's not distracting
+            side: THREE.BackSide 
+        });
         
         const roomMaterials = [wallMaterial, wallMaterial, ceilingMaterial, floorMaterial, wallMaterial, wallMaterial];
         const room = new THREE.Mesh(roomGeometry, roomMaterials);
@@ -289,7 +318,6 @@
         controller2.add(createPointerLine());
         playerRig.add(controller2); 
 
-        // Tracks if we are already in the process of quitting VR
         let isExitingVR = false;
 
         function handleVRJoystick() {
@@ -325,11 +353,8 @@
                         }
                     }
 
-                    // --- NEW EXIT VR LOGIC ---
                     if (source.handedness === 'left' && !isExitingVR) {
                         let exitPressed = false;
-                        
-                        // Loop through auxiliary buttons (index 4 and higher skips trigger, grip, and joystick clicks)
                         for (let b = 4; b < source.gamepad.buttons.length; b++) {
                             if (source.gamepad.buttons[b].pressed) {
                                 exitPressed = true;
@@ -339,7 +364,6 @@
 
                         if (exitPressed) {
                             isExitingVR = true;
-                            // Terminate the WebXR session
                             session.end().then(() => {
                                 isExitingVR = false;
                             }).catch(() => {
