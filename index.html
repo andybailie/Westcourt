@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Audio-Visual Gallery (Textured & Quest 3 Ready)</title>
+    <title>3D Audio-Visual Gallery (VR, Textures & Background Music)</title>
     <style>
         body {
             margin: 0;
@@ -67,11 +67,12 @@
                 opacity: 0.5; 
             }
         }
+
         /* Moves the Three.js VR button to the bottom right */
-#VRButton {
-    left: auto !important;
-    right: 20px !important;
-}
+        #VRButton {
+            left: auto !important;
+            right: 20px !important;
+        }
     </style>
 </head>
 <body>
@@ -84,6 +85,7 @@
         🔙 <strong>Exit VR:</strong> Press Menu (☰), X, or Y on Left Controller
     </div>
 
+    <!-- On-Screen D-Pad -->
     <div id="mobile-controls">
         <div class="dir-btn" id="btn-up">⬆️</div>
         <div class="control-row">
@@ -119,7 +121,7 @@
         // 2. SCENE SETUP & PLAYER RIG
         // ==========================================
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x111111); // Darkened background slightly for contrast
+        scene.background = new THREE.Color(0x111111); 
         
         const playerRig = new THREE.Group();
         playerRig.position.set(0, 1.2, 0); 
@@ -144,44 +146,31 @@
         scene.add(pointLight);
 
         // ==========================================
-        // 3. ENVIRONMENT & ROOM (Now with Textures!)
+        // 3. ENVIRONMENT & ROOM (Textures)
         // ==========================================
         const roomSize = 40;
         const textureLoader = new THREE.TextureLoader();
         
-        // Load the Wall Texture
         const wallTexture = textureLoader.load('images/wall.jpg');
         wallTexture.wrapS = THREE.RepeatWrapping;
         wallTexture.wrapT = THREE.RepeatWrapping;
-        // The first number is horizontal repeats (wrap around the 4 walls).
-        // The second number is vertical repeats (height of the wall).
-        // Adjust these numbers if your texture looks stretched or too small!
         wallTexture.repeat.set(8, 2); 
 
-        // Load the Floor Texture
         const floorTexture = textureLoader.load('images/floor.jpg');
         floorTexture.wrapS = THREE.RepeatWrapping;
         floorTexture.wrapT = THREE.RepeatWrapping;
-        // 40x40 meter floor, so repeating 10x10 means each tile is 4x4 meters.
         floorTexture.repeat.set(10, 10); 
 
         const roomGeometry = new THREE.BoxGeometry(roomSize, 12, roomSize);
         
-        // Apply textures to materials. 
-        // We set a white base color so the image shows in its natural color.
         const wallMaterial = new THREE.MeshStandardMaterial({ 
-            map: wallTexture,
-            color: 0xffffff, 
-            side: THREE.BackSide 
+            map: wallTexture, color: 0xffffff, side: THREE.BackSide 
         });
         const floorMaterial = new THREE.MeshStandardMaterial({ 
-            map: floorTexture,
-            color: 0xcccccc, // Slightly dimmed base color for the floor
-            side: THREE.BackSide 
+            map: floorTexture, color: 0xcccccc, side: THREE.BackSide 
         });
         const ceilingMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x222222, // Kept the ceiling a flat dark color so it's not distracting
-            side: THREE.BackSide 
+            color: 0x222222, side: THREE.BackSide 
         });
         
         const roomMaterials = [wallMaterial, wallMaterial, ceilingMaterial, floorMaterial, wallMaterial, wallMaterial];
@@ -273,6 +262,29 @@
         // ==========================================
         // 5. AUDIO PLAYBACK FUNCTION 
         // ==========================================
+        
+        // --- BACKGROUND MUSIC ---
+        const bgMusic = new Audio("audio/background.mp3");
+        bgMusic.loop = true;
+        bgMusic.volume = 0.15; // 15% volume
+
+        let bgMusicStarted = false;
+        function startBgMusic() {
+            if (!bgMusicStarted) {
+                bgMusic.play().catch(e => console.log("Awaiting user interaction for background music."));
+                bgMusicStarted = true;
+                
+                // Remove listeners once music starts
+                window.removeEventListener('click', startBgMusic);
+                window.removeEventListener('touchstart', startBgMusic);
+            }
+        }
+        
+        window.addEventListener('click', startBgMusic);
+        window.addEventListener('touchstart', startBgMusic);
+
+
+        // --- EXHIBIT AUDIO ---
         let currentAudio = null;
         function playAudio(buttonObject) {
             const url = buttonObject.userData.audioUrl;
