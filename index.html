@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Audio-Visual Gallery (VR, Textures & Background Music)</title>
+    <title>3D Audio-Visual Gallery (VR, Textures, BG Music & Volume)</title>
     <style>
         body {
             margin: 0;
@@ -103,18 +103,18 @@
         // 1. GALLERY DATA CONFIGURATION
         // ==========================================
         const galleryItems = [
-            { image: "images/image_1.jpg", text: "Exhibit 1\n\nCommercial Narration.\n\nA warm, authoritative read.", audio: "audio/track_1.mp3" },
-            { image: "images/image_2.jpg", text: "Exhibit 2\n\nCharacter Voice.\n\nDeep and gravelly tone.", audio: "audio/track_2.mp3" },
-            { image: "images/image_3.jpg", text: "Exhibit 3\n\nE-Learning Module.\n\nClear, paced, and articulate.", audio: "audio/track_3.mp3" },
-            { image: "images/image_4.jpg", text: "Exhibit 4\n\nDocumentary Read.\n\nNatural, resonant delivery.", audio: "audio/track_4.mp3" },
-            { image: "images/image_5.jpg", text: "Exhibit 5\n\nAudiobook Sample.\n\nDynamic emotional pacing.", audio: "audio/track_5.mp3" },
-            { image: "images/image_6.jpg", text: "Exhibit 6\n\nRadio Imaging.\n\nPunchy, high-energy sweepers.", audio: "audio/track_6.mp3" },
-            { image: "images/image_7.jpg", text: "Exhibit 7\n\nAnimation Voiceover.\n\nExaggerated and expressive.", audio: "audio/track_7.mp3" },
-            { image: "images/image_8.jpg", text: "Exhibit 8\n\nPodcast Intro.\n\nInviting and professional.", audio: "audio/track_8.mp3" },
-            { image: "images/image_9.jpg", text: "Exhibit 9\n\nMedical Narration.\n\nPrecise pronunciation.", audio: "audio/track_9.mp3" },
-            { image: "images/image_10.jpg", text: "Exhibit 10\n\nPromo Read.\n\nUrgent, intense style.", audio: "audio/track_10.mp3" },
-            { image: "images/image_11.jpg", text: "Exhibit 11\n\nExplainer Video.\n\nFriendly, conversational.", audio: "audio/track_11.mp3" },
-            { image: "images/image_12.jpg", text: "Exhibit 12\n\nTheatrical Trailer.\n\nMaximum resonance.", audio: "audio/track_12.mp3" }
+            { image: "images/image_1.jpg", text: "Exhibit 1\n\nCommercial Narration.\n\nA warm, authoritative read.", audio: "audio/track_1.mp3", volume: 1.0 },
+            { image: "images/image_2.jpg", text: "Exhibit 2\n\nCharacter Voice.\n\nDeep and gravelly tone.", audio: "audio/track_2.mp3", volume: 1.0 },
+            { image: "images/image_3.jpg", text: "Exhibit 3\n\nE-Learning Module.\n\nClear, paced, and articulate.", audio: "audio/track_3.mp3", volume: 1.0 },
+            { image: "images/image_4.jpg", text: "Exhibit 4\n\nDocumentary Read.\n\nNatural, resonant delivery.", audio: "audio/track_4.mp3", volume: 1.0 },
+            { image: "images/image_5.jpg", text: "Exhibit 5\n\nAudiobook Sample.\n\nDynamic emotional pacing.", audio: "audio/track_5.mp3", volume: 1.0 },
+            { image: "images/image_6.jpg", text: "Exhibit 6\n\nRadio Imaging.\n\nPunchy, high-energy sweepers.", audio: "audio/track_6.mp3", volume: 1.0 },
+            { image: "images/image_7.jpg", text: "Exhibit 7\n\nAnimation Voiceover.\n\nExaggerated and expressive.", audio: "audio/track_7.mp3", volume: 1.0 },
+            { image: "images/image_8.jpg", text: "Exhibit 8\n\nPodcast Intro.\n\nInviting and professional.", audio: "audio/track_8.mp3", volume: 1.0 },
+            { image: "images/image_9.jpg", text: "Exhibit 9\n\nMedical Narration.\n\nPrecise pronunciation.", audio: "audio/track_9.mp3", volume: 1.0 },
+            { image: "images/image_10.jpg", text: "Exhibit 10\n\nPromo Read.\n\nUrgent, intense style.", audio: "audio/track_10.mp3", volume: 1.0 },
+            { image: "images/image_11.jpg", text: "Exhibit 11\n\nExplainer Video.\n\nFriendly, conversational.", audio: "audio/track_11.mp3", volume: 1.0 },
+            { image: "images/image_12.jpg", text: "Exhibit 12\n\nTheatrical Trailer.\n\nMaximum resonance.", audio: "audio/track_12.mp3", volume: 1.0 }
         ];
 
         // ==========================================
@@ -251,7 +251,13 @@
 
             const btnMesh = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.5, 0.2), new THREE.MeshStandardMaterial({ color: 0x28a745 }));
             btnMesh.position.set(1.5, 1, 0);
-            btnMesh.userData = { isAudioButton: true, audioUrl: data.audio };
+            
+            // Apply volume data to the button
+            btnMesh.userData = { 
+                isAudioButton: true, 
+                audioUrl: data.audio,
+                audioVolume: data.volume !== undefined ? data.volume : 1.0 
+            };
 
             easelGroup.add(imgMesh, borderMesh, textMesh, textBorder, btnMesh);
             easelGroup.position.set(pos.x, 0, pos.z);
@@ -263,7 +269,7 @@
         // 5. AUDIO PLAYBACK FUNCTION 
         // ==========================================
         
-       // --- BACKGROUND MUSIC ---
+        // --- BACKGROUND MUSIC ---
         const bgMusic = new Audio("audio/background.mp3");
         bgMusic.loop = true;
         bgMusic.volume = 0.15; // 15% volume
@@ -275,23 +281,17 @@
                 
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
-                        // Success! The browser allowed the audio to play.
                         bgMusicStarted = true;
-                        
-                        // Now we can safely remove the listeners
                         window.removeEventListener('click', startBgMusic);
                         window.removeEventListener('touchstart', startBgMusic);
                         window.removeEventListener('touchend', startBgMusic);
                     }).catch(error => {
-                        // Browser blocked it (likely a touchstart). 
-                        // Do nothing, let it try again on the next tap or touchend.
-                        console.log("Awaiting valid user tap to start music.");
+                        console.log("Awaiting valid user tap to start background music.");
                     });
                 }
             }
         }
         
-        // Listen for all types of interaction to catch the one the mobile browser accepts
         window.addEventListener('click', startBgMusic);
         window.addEventListener('touchstart', startBgMusic);
         window.addEventListener('touchend', startBgMusic);
@@ -310,6 +310,8 @@
             setTimeout(() => buttonObject.material.color.setHex(originalColor), 200);
 
             currentAudio = new Audio(url);
+            // Assign custom volume
+            currentAudio.volume = buttonObject.userData.audioVolume;
             currentAudio.play().catch(e => console.log("Audio playback error.", e));
         }
 
