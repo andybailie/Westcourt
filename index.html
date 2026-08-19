@@ -263,7 +263,7 @@
         // 5. AUDIO PLAYBACK FUNCTION 
         // ==========================================
         
-        // --- BACKGROUND MUSIC ---
+       // --- BACKGROUND MUSIC ---
         const bgMusic = new Audio("audio/background.mp3");
         bgMusic.loop = true;
         bgMusic.volume = 0.15; // 15% volume
@@ -271,17 +271,30 @@
         let bgMusicStarted = false;
         function startBgMusic() {
             if (!bgMusicStarted) {
-                bgMusic.play().catch(e => console.log("Awaiting user interaction for background music."));
-                bgMusicStarted = true;
+                let playPromise = bgMusic.play();
                 
-                // Remove listeners once music starts
-                window.removeEventListener('click', startBgMusic);
-                window.removeEventListener('touchstart', startBgMusic);
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        // Success! The browser allowed the audio to play.
+                        bgMusicStarted = true;
+                        
+                        // Now we can safely remove the listeners
+                        window.removeEventListener('click', startBgMusic);
+                        window.removeEventListener('touchstart', startBgMusic);
+                        window.removeEventListener('touchend', startBgMusic);
+                    }).catch(error => {
+                        // Browser blocked it (likely a touchstart). 
+                        // Do nothing, let it try again on the next tap or touchend.
+                        console.log("Awaiting valid user tap to start music.");
+                    });
+                }
             }
         }
         
+        // Listen for all types of interaction to catch the one the mobile browser accepts
         window.addEventListener('click', startBgMusic);
         window.addEventListener('touchstart', startBgMusic);
+        window.addEventListener('touchend', startBgMusic);
 
 
         // --- EXHIBIT AUDIO ---
