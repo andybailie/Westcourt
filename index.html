@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Audio-Visual Gallery (VR Ready)</title>
+    <title>3D Audio-Visual Gallery (Quest 3 Ready)</title>
     <style>
         body {
             margin: 0;
@@ -75,7 +75,7 @@
         🖱️/👆 <strong>Look:</strong> Drag screen<br>
         🖱️/👆 <strong>Play:</strong> Tap green buttons<br>
         ⌨️/🔘 <strong>Move:</strong> Arrow keys or on-screen buttons<br>
-        🥽 <strong>VR:</strong> Click "ENTER VR" at the bottom
+        🥽 <strong>Quest 3:</strong> Left Stick moves, Right Stick turns
     </div>
 
     <!-- On-Screen D-Pad -->
@@ -90,93 +90,47 @@
 
     <script type="module">
         import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-        // 1. Import the VR Button
         import { VRButton } from 'https://unpkg.com/three@0.160.0/examples/jsm/webxr/VRButton.js';
 
         // ==========================================
         // 1. GALLERY DATA CONFIGURATION
         // ==========================================
         const galleryItems = [
-            {
-                image: "images/image_1.jpg",
-                text: "Exhibit 1\n\nCommercial Narration.\n\nA warm, authoritative read tailored for corporate broadcasting and brand anthems.",
-                audio: "audio/track_1.mp3"
-            },
-            {
-                image: "images/image_2.jpg",
-                text: "Exhibit 2\n\nCharacter Voice.\n\nDeep and gravelly tone suitable for video game antagonists or dramatic storytelling.",
-                audio: "audio/track_2.mp3"
-            },
-            {
-                image: "images/image_3.jpg",
-                text: "Exhibit 3\n\nE-Learning Module.\n\nClear, paced, and articulate delivery to guide listeners through complex technical concepts.",
-                audio: "audio/track_3.mp3"
-            },
-            {
-                image: "images/image_4.jpg",
-                text: "Exhibit 4\n\nDocumentary Read.\n\nNatural, resonant Northern Irish delivery for long-form factual content and nature programming.",
-                audio: "audio/track_4.mp3"
-            },
-            {
-                image: "images/image_5.jpg",
-                text: "Exhibit 5\n\nAudiobook Sample - Fiction.\n\nDynamic pacing showcasing emotional range and subtle character distinctions.",
-                audio: "audio/track_5.mp3"
-            },
-            {
-                image: "images/image_6.jpg",
-                text: "Exhibit 6\n\nRadio Imaging.\n\nPunchy, high-energy sweepers and station idents to cut through the mix.",
-                audio: "audio/track_6.mp3"
-            },
-            {
-                image: "images/image_7.jpg",
-                text: "Exhibit 7\n\nAnimation Voiceover.\n\nExaggerated and expressive vocal performance designed for animated shorts.",
-                audio: "audio/track_7.mp3"
-            },
-            {
-                image: "images/image_8.jpg",
-                text: "Exhibit 8\n\nPodcast Intro.\n\nInviting and professional establishing tone to hook listeners in the first ten seconds.",
-                audio: "audio/track_8.mp3"
-            },
-            {
-                image: "images/image_9.jpg",
-                text: "Exhibit 9\n\nMedical Narration.\n\nPrecise pronunciation and measured delivery for clinical or pharmaceutical scripts.",
-                audio: "audio/track_9.mp3"
-            },
-            {
-                image: "images/image_10.jpg",
-                text: "Exhibit 10\n\nPromo Read.\n\nUrgent, intense style perfect for upcoming event trailers and television promos.",
-                audio: "audio/track_10.mp3"
-            },
-            {
-                image: "images/image_11.jpg",
-                text: "Exhibit 11\n\nExplainer Video.\n\nFriendly, conversational approach that makes dry information accessible and engaging.",
-                audio: "audio/track_11.mp3"
-            },
-            {
-                image: "images/image_12.jpg",
-                text: "Exhibit 12\n\nTheatrical Trailer.\n\nMaximum resonance and gravitas for cinematic theatrical releases.",
-                audio: "audio/track_12.mp3"
-            }
+            { image: "images/image_1.jpg", text: "Exhibit 1\n\nCommercial Narration.\n\nA warm, authoritative read.", audio: "audio/track_1.mp3" },
+            { image: "images/image_2.jpg", text: "Exhibit 2\n\nCharacter Voice.\n\nDeep and gravelly tone.", audio: "audio/track_2.mp3" },
+            { image: "images/image_3.jpg", text: "Exhibit 3\n\nE-Learning Module.\n\nClear, paced, and articulate.", audio: "audio/track_3.mp3" },
+            { image: "images/image_4.jpg", text: "Exhibit 4\n\nDocumentary Read.\n\nNatural, resonant delivery.", audio: "audio/track_4.mp3" },
+            { image: "images/image_5.jpg", text: "Exhibit 5\n\nAudiobook Sample.\n\nDynamic emotional pacing.", audio: "audio/track_5.mp3" },
+            { image: "images/image_6.jpg", text: "Exhibit 6\n\nRadio Imaging.\n\nPunchy, high-energy sweepers.", audio: "audio/track_6.mp3" },
+            { image: "images/image_7.jpg", text: "Exhibit 7\n\nAnimation Voiceover.\n\nExaggerated and expressive.", audio: "audio/track_7.mp3" },
+            { image: "images/image_8.jpg", text: "Exhibit 8\n\nPodcast Intro.\n\nInviting and professional.", audio: "audio/track_8.mp3" },
+            { image: "images/image_9.jpg", text: "Exhibit 9\n\nMedical Narration.\n\nPrecise pronunciation.", audio: "audio/track_9.mp3" },
+            { image: "images/image_10.jpg", text: "Exhibit 10\n\nPromo Read.\n\nUrgent, intense style.", audio: "audio/track_10.mp3" },
+            { image: "images/image_11.jpg", text: "Exhibit 11\n\nExplainer Video.\n\nFriendly, conversational.", audio: "audio/track_11.mp3" },
+            { image: "images/image_12.jpg", text: "Exhibit 12\n\nTheatrical Trailer.\n\nMaximum resonance.", audio: "audio/track_12.mp3" }
         ];
 
         // ==========================================
-        // 2. SCENE SETUP
+        // 2. SCENE SETUP & PLAYER RIG
         // ==========================================
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x333333); 
         
+        // The Player Rig acts as a moving vehicle holding the camera and controllers
+        const playerRig = new THREE.Group();
+        // BOOST HEIGHT: Elevates the player 1.2 meters to offset the massive scale of the easels
+        playerRig.position.set(0, 1.2, 0); 
+        scene.add(playerRig);
+
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 1.6, 0); 
+        camera.position.set(0, 1.6, 0); // Desktop eye level
         camera.rotation.order = 'YXZ'; 
+        playerRig.add(camera); // Add camera to the rig, NOT the scene
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        
-        // 2. Enable WebXR on the renderer
         renderer.xr.enabled = true;
         document.body.appendChild(renderer.domElement);
-        
-        // 3. Add the VR Button to the web page
         document.body.appendChild(VRButton.createButton(renderer));
 
         const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
@@ -284,33 +238,30 @@
         });
 
         // ==========================================
-        // 5. AUDIO PLAYBACK FUNCTION (Shared)
+        // 5. AUDIO PLAYBACK FUNCTION 
         // ==========================================
         let currentAudio = null;
         function playAudio(buttonObject) {
             const url = buttonObject.userData.audioUrl;
-            
             if (currentAudio) {
                 currentAudio.pause();
                 currentAudio.currentTime = 0;
             }
-            
             const originalColor = buttonObject.material.color.getHex();
             buttonObject.material.color.setHex(0xffffff);
             setTimeout(() => buttonObject.material.color.setHex(originalColor), 200);
 
             currentAudio = new Audio(url);
-            currentAudio.play().catch(e => console.log("Audio playback requires user interaction.", e));
+            currentAudio.play().catch(e => console.log("Audio playback error.", e));
         }
 
-
         // ==========================================
-        // 6. VR CONTROLLER SETUP
+        // 6. VR CONTROLLER SETUP & LOGIC
         // ==========================================
+        const raycaster = new THREE.Raycaster();
+        
         function onSelectStart(event) {
             const controller = event.target;
-            
-            // Calculate where the controller is pointing
             const tempMatrix = new THREE.Matrix4();
             tempMatrix.identity().extractRotation(controller.matrixWorld);
             raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
@@ -318,45 +269,80 @@
 
             const intersects = raycaster.intersectObjects(easels.children, true);
             const clickedButton = intersects.find(i => i.object.userData.isAudioButton);
-
-            if (clickedButton) {
-                playAudio(clickedButton.object);
-            }
+            if (clickedButton) playAudio(clickedButton.object);
         }
 
-        // Create a visual laser pointer for the controllers
         function createPointerLine() {
             const geometry = new THREE.BufferGeometry().setFromPoints([
                 new THREE.Vector3(0, 0, 0), 
-                new THREE.Vector3(0, 0, -10) // 10 meter long beam
+                new THREE.Vector3(0, 0, -10) 
             ]);
-            const material = new THREE.LineBasicMaterial({ color: 0xffffff });
-            return new THREE.Line(geometry, material);
+            return new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: 0xffffff }));
         }
 
         const controller1 = renderer.xr.getController(0);
         controller1.addEventListener('selectstart', onSelectStart);
         controller1.add(createPointerLine());
-        scene.add(controller1);
+        playerRig.add(controller1); // Attach to rig, not scene!
 
         const controller2 = renderer.xr.getController(1);
         controller2.addEventListener('selectstart', onSelectStart);
         controller2.add(createPointerLine());
-        scene.add(controller2);
+        playerRig.add(controller2); // Attach to rig, not scene!
 
+        // Handle Quest 3 Thumbstick Locomotion
+        function handleVRJoystick() {
+            if (!renderer.xr.isPresenting) return;
+            const session = renderer.xr.getSession();
+            if (!session) return;
+            
+            const vrMoveSpeed = 0.08;
+            const vrTurnSpeed = 0.04;
+
+            session.inputSources.forEach((source) => {
+                if (source.gamepad) {
+                    const axes = source.gamepad.axes;
+                    // Quest 3 joysticks are usually found at index 2 (X) and 3 (Y)
+                    const xAxis = axes.length > 2 ? axes[2] : axes[0];
+                    const yAxis = axes.length > 3 ? axes[3] : axes[1];
+
+                    // Deadzone to prevent drifting when you aren't touching the stick
+                    if (Math.abs(xAxis) > 0.1 || Math.abs(yAxis) > 0.1) {
+                        
+                        // LEFT HAND: Movement (Forward/Back & Strafe)
+                        if (source.handedness === 'left') {
+                            const moveDir = new THREE.Vector3();
+                            camera.getWorldDirection(moveDir);
+                            moveDir.y = 0; // Lock to horizontal plane
+                            moveDir.normalize();
+
+                            const strafeDir = new THREE.Vector3();
+                            strafeDir.crossVectors(camera.up, moveDir).normalize();
+                            
+                            // Push the Rig
+                            playerRig.position.addScaledVector(moveDir, -yAxis * vrMoveSpeed);
+                            playerRig.position.addScaledVector(strafeDir, -xAxis * vrMoveSpeed);
+                        }
+                        
+                        // RIGHT HAND: Smooth Turning
+                        if (source.handedness === 'right') {
+                            playerRig.rotation.y -= xAxis * vrTurnSpeed;
+                        }
+                    }
+                }
+            });
+        }
 
         // ==========================================
         // 7. DESKTOP/MOBILE LOOK INTERACTION
         // ==========================================
-        const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
-        
         let isDragging = false;
         let previousPosition = { x: 0, y: 0 };
         let dragDistance = 0; 
 
         function handleDragStart(x, y) {
-            if (renderer.xr.isPresenting) return; // Disable drag look in VR
+            if (renderer.xr.isPresenting) return; 
             isDragging = true;
             dragDistance = 0;
             previousPosition = { x, y };
@@ -366,20 +352,16 @@
             if (!isDragging || renderer.xr.isPresenting) return;
             const deltaX = x - previousPosition.x;
             const deltaY = y - previousPosition.y;
-            
             dragDistance += Math.abs(deltaX) + Math.abs(deltaY);
 
             const lookSpeed = 0.005;
             camera.rotation.y -= deltaX * lookSpeed;
             camera.rotation.x -= deltaY * lookSpeed;
             camera.rotation.x = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, camera.rotation.x));
-
             previousPosition = { x, y };
         }
 
-        function handleDragEnd() {
-            isDragging = false;
-        }
+        function handleDragEnd() { isDragging = false; }
 
         window.addEventListener('mousedown', (e) => handleDragStart(e.clientX, e.clientY));
         window.addEventListener('mousemove', (e) => handleDragMove(e.clientX, e.clientY));
@@ -387,15 +369,11 @@
 
         window.addEventListener('touchstart', (e) => {
             if (e.target.closest('#mobile-controls') || renderer.xr.isPresenting) return;
-            if (e.touches.length > 0) {
-                handleDragStart(e.touches[0].clientX, e.touches[0].clientY);
-            }
+            if (e.touches.length > 0) handleDragStart(e.touches[0].clientX, e.touches[0].clientY);
         });
         window.addEventListener('touchmove', (e) => {
             if (e.target.closest('#mobile-controls') || renderer.xr.isPresenting) return;
-            if (e.touches.length > 0) {
-                handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
-            }
+            if (e.touches.length > 0) handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
         });
         window.addEventListener('touchend', handleDragEnd);
 
@@ -408,24 +386,11 @@
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(easels.children, true);
             const clickedButton = intersects.find(i => i.object.userData.isAudioButton);
-
-            if (clickedButton) {
-                playAudio(clickedButton.object);
-            }
-        });
-
-        window.addEventListener('mousemove', (event) => {
-            if(isDragging || renderer.xr.isPresenting) return;
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(easels.children, true);
-            const hovering = intersects.some(i => i.object.userData.isAudioButton);
-            document.body.style.cursor = hovering ? 'pointer' : 'default';
+            if (clickedButton) playAudio(clickedButton.object);
         });
 
         // ==========================================
-        // 8. MOVEMENT CONTROLS (Keyboard & On-Screen)
+        // 8. DESKTOP MOVEMENT CONTROLS 
         // ==========================================
         const keys = { w: false, a: false, s: false, d: false };
         const moveSpeed = 0.15;
@@ -459,28 +424,30 @@
         bindVirtualButton('btn-right', 'd');
 
         // ==========================================
-        // 9. RENDER LOOP (Updated for WebXR)
+        // 9. RENDER LOOP 
         // ==========================================
         function animate() {
-            // Only process desktop/mobile manual movement if we are NOT inside VR.
-            // Inside VR, the headset's physical location controls the camera.
-            if (!renderer.xr.isPresenting) {
+            if (renderer.xr.isPresenting) {
+                // VR Locomotion
+                handleVRJoystick();
+            } else {
+                // Desktop Locomotion - Move the Rig, not just the camera
                 const moveDirection = new THREE.Vector3();
                 camera.getWorldDirection(moveDirection);
                 moveDirection.y = 0; 
                 moveDirection.normalize();
 
-                if (keys.w) camera.position.addScaledVector(moveDirection, moveSpeed);
-                if (keys.s) camera.position.addScaledVector(moveDirection, -moveSpeed);
-                
-                if (keys.a) camera.rotation.y += turnSpeed;
-                if (keys.d) camera.rotation.y -= turnSpeed;
-
-                if (camera.position.x > 18) camera.position.x = 18;
-                if (camera.position.x < -18) camera.position.x = -18;
-                if (camera.position.z > 18) camera.position.z = 18;
-                if (camera.position.z < -18) camera.position.z = -18;
+                if (keys.w) playerRig.position.addScaledVector(moveDirection, moveSpeed);
+                if (keys.s) playerRig.position.addScaledVector(moveDirection, -moveSpeed);
+                if (keys.a) playerRig.rotation.y += turnSpeed;
+                if (keys.d) playerRig.rotation.y -= turnSpeed;
             }
+
+            // Keep playerRig inside the room
+            if (playerRig.position.x > 18) playerRig.position.x = 18;
+            if (playerRig.position.x < -18) playerRig.position.x = -18;
+            if (playerRig.position.z > 18) playerRig.position.z = 18;
+            if (playerRig.position.z < -18) playerRig.position.z = -18;
 
             renderer.render(scene, camera);
         }
@@ -491,7 +458,6 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // 4. Use setAnimationLoop instead of requestAnimationFrame for VR
         renderer.setAnimationLoop(animate);
     </script>
 </body>
