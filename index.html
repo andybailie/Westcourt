@@ -75,7 +75,8 @@
         🖱️/👆 <strong>Look:</strong> Drag screen<br>
         🖱️/👆 <strong>Play:</strong> Tap green buttons<br>
         ⌨️/🔘 <strong>Move:</strong> Arrow keys or on-screen buttons<br>
-        🥽 <strong>Quest 3:</strong> Left Stick moves, Right Stick turns
+        🥽 <strong>Quest 3:</strong> Left Stick moves, Right Stick turns<br>
+        🔙 <strong>Exit VR:</strong> Press Menu (☰), X, or Y on Left Controller
     </div>
 
     <!-- On-Screen D-Pad -->
@@ -116,16 +117,14 @@
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x333333); 
         
-        // The Player Rig acts as a moving vehicle holding the camera and controllers
         const playerRig = new THREE.Group();
-        // BOOST HEIGHT: Elevates the player 1.2 meters to offset the massive scale of the easels
         playerRig.position.set(0, 1.2, 0); 
         scene.add(playerRig);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 1.6, 0); // Desktop eye level
+        camera.position.set(0, 1.6, 0); 
         camera.rotation.order = 'YXZ'; 
-        playerRig.add(camera); // Add camera to the rig, NOT the scene
+        playerRig.add(camera); 
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -283,14 +282,16 @@
         const controller1 = renderer.xr.getController(0);
         controller1.addEventListener('selectstart', onSelectStart);
         controller1.add(createPointerLine());
-        playerRig.add(controller1); // Attach to rig, not scene!
+        playerRig.add(controller1); 
 
         const controller2 = renderer.xr.getController(1);
         controller2.addEventListener('selectstart', onSelectStart);
         controller2.add(createPointerLine());
-        playerRig.add(controller2); // Attach to rig, not scene!
+        playerRig.add(controller2); 
 
-        // Handle Quest 3 Thumbstick Locomotion
+        // Tracks if we are already in the process of quitting VR
+        let isExitingVR = false;
+
         function handleVRJoystick() {
             if (!renderer.xr.isPresenting) return;
             const session = renderer.xr.getSession();
@@ -302,31 +303,48 @@
             session.inputSources.forEach((source) => {
                 if (source.gamepad) {
                     const axes = source.gamepad.axes;
-                    // Quest 3 joysticks are usually found at index 2 (X) and 3 (Y)
                     const xAxis = axes.length > 2 ? axes[2] : axes[0];
                     const yAxis = axes.length > 3 ? axes[3] : axes[1];
 
-                    // Deadzone to prevent drifting when you aren't touching the stick
                     if (Math.abs(xAxis) > 0.1 || Math.abs(yAxis) > 0.1) {
-                        
-                        // LEFT HAND: Movement (Forward/Back & Strafe)
                         if (source.handedness === 'left') {
                             const moveDir = new THREE.Vector3();
                             camera.getWorldDirection(moveDir);
-                            moveDir.y = 0; // Lock to horizontal plane
+                            moveDir.y = 0; 
                             moveDir.normalize();
 
                             const strafeDir = new THREE.Vector3();
                             strafeDir.crossVectors(camera.up, moveDir).normalize();
                             
-                            // Push the Rig
                             playerRig.position.addScaledVector(moveDir, -yAxis * vrMoveSpeed);
                             playerRig.position.addScaledVector(strafeDir, -xAxis * vrMoveSpeed);
                         }
                         
-                        // RIGHT HAND: Smooth Turning
                         if (source.handedness === 'right') {
                             playerRig.rotation.y -= xAxis * vrTurnSpeed;
+                        }
+                    }
+
+                    // --- NEW EXIT VR LOGIC ---
+                    if (source.handedness === 'left' && !isExitingVR) {
+                        let exitPressed = false;
+                        
+                        // Loop through auxiliary buttons (index 4 and higher skips trigger, grip, and joystick clicks)
+                        for (let b = 4; b < source.gamepad.buttons.length; b++) {
+                            if (source.gamepad.buttons[b].pressed) {
+                                exitPressed = true;
+                                break;
+                            }
+                        }
+
+                        if (exitPressed) {
+                            isExitingVR = true;
+                            // Terminate the WebXR session
+                            session.end().then(() => {
+                                isExitingVR = false;
+                            }).catch(() => {
+                                isExitingVR = false;
+                            });
                         }
                     }
                 }
@@ -428,10 +446,8 @@
         // ==========================================
         function animate() {
             if (renderer.xr.isPresenting) {
-                // VR Locomotion
                 handleVRJoystick();
             } else {
-                // Desktop Locomotion - Move the Rig, not just the camera
                 const moveDirection = new THREE.Vector3();
                 camera.getWorldDirection(moveDirection);
                 moveDirection.y = 0; 
@@ -443,7 +459,6 @@
                 if (keys.d) playerRig.rotation.y -= turnSpeed;
             }
 
-            // Keep playerRig inside the room
             if (playerRig.position.x > 18) playerRig.position.x = 18;
             if (playerRig.position.x < -18) playerRig.position.x = -18;
             if (playerRig.position.z > 18) playerRig.position.z = 18;
