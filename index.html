@@ -99,7 +99,7 @@
         import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
         import { VRButton } from 'https://unpkg.com/three@0.160.0/examples/jsm/webxr/VRButton.js';
 
-        // ==========================================
+      // ==========================================
         // 1. GALLERY DATA CONFIGURATION
         // ==========================================
         const galleryItems = [
@@ -114,7 +114,11 @@
             { image: "images/Rain.jpg", text: "Exhibit 9\n\nMedical Narration.\n\nPrecise pronunciation.", audio: "audio/track_9.mp3" },
             { image: "images/Roots.jpg", text: "Exhibit 10\n\nPromo Read.\n\nUrgent, intense style.", audio: "audio/track_10.mp3" },
             { image: "images/Themask.jpg", text: "Exhibit 11\n\nExplainer Video.\n\nFriendly, conversational.", audio: "audio/track_11.mp3" },
-            { image: "images/Time.jpg", text: "Exhibit 12\n\nTheatrical Trailer.\n\nMaximum resonance.", audio: "audio/track_12.mp3" }
+            { image: "images/Time.jpg", text: "Exhibit 12\n\nTheatrical Trailer.\n\nMaximum resonance.", audio: "audio/track_12.mp3" },
+            // Added Exhibit 13
+            { image: "images/Placeholder13.jpg", text: "Exhibit 13\n\nCorporate Presentation.\n\nProfessional and clear.", audio: "audio/track_13.mp3" },
+            // Added Exhibit 14
+            { image: "images/Placeholder14.jpg", text: "Exhibit 14\n\nVideo Game Character.\n\nHigh energy and dramatic.", audio: "audio/track_14.mp3" }
         ];
 
         // ==========================================
@@ -223,10 +227,15 @@
         const easels = new THREE.Group();
         scene.add(easels);
 
+        // Updated for 14 easels: 4 on Front/Back walls, 3 on Left/Right walls
         const positions = [
-            { x: -10, z: -18, rotY: 0 }, { x: 0, z: -18, rotY: 0 }, { x: 10, z: -18, rotY: 0 },
-            { x: 10, z: 18, rotY: Math.PI }, { x: 0, z: 18, rotY: Math.PI }, { x: -10, z: 18, rotY: Math.PI },
+            // Back Wall (4 easels)
+            { x: -12, z: -18, rotY: 0 }, { x: -4, z: -18, rotY: 0 }, { x: 4, z: -18, rotY: 0 }, { x: 12, z: -18, rotY: 0 },
+            // Front Wall (4 easels)
+            { x: 12, z: 18, rotY: Math.PI }, { x: 4, z: 18, rotY: Math.PI }, { x: -4, z: 18, rotY: Math.PI }, { x: -12, z: 18, rotY: Math.PI },
+            // Right Wall (3 easels)
             { x: 18, z: -10, rotY: -Math.PI/2 }, { x: 18, z: 0, rotY: -Math.PI/2 }, { x: 18, z: 10, rotY: -Math.PI/2 },
+            // Left Wall (3 easels)
             { x: -18, z: 10, rotY: Math.PI/2 }, { x: -18, z: 0, rotY: Math.PI/2 }, { x: -18, z: -10, rotY: Math.PI/2 }
         ];
 
