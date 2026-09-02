@@ -187,23 +187,31 @@
         // ==========================================
         function createTextTexture(text) {
             const canvas = document.createElement('canvas');
-            canvas.width = 512;
-            canvas.height = 512;
+            // Doubled resolution to fit long poems and stay crisp in VR
+            canvas.width = 1024;
+            canvas.height = 1024;
             const ctx = canvas.getContext('2d');
             
             ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, 512, 512);
+            ctx.fillRect(0, 0, 1024, 1024);
             ctx.fillStyle = '#000000';
-            ctx.font = 'bold 28px sans-serif'; 
+            // Scaled down font size to fit more lines
+            ctx.font = 'bold 24px sans-serif'; 
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
             
-            const maxWidth = 460; 
-            const lineHeight = 36;
+            const maxWidth = 920; 
+            const lineHeight = 30; // Tighter line height for poetry
             let y = 40; 
 
             const paragraphs = text.split('\n');
             paragraphs.forEach(paragraph => {
+                // If it's an intentional blank line (\n\n), just add a space and move down
+                if (paragraph === "") {
+                    y += lineHeight;
+                    return;
+                }
+
                 const words = paragraph.split(' ');
                 let currentLine = '';
 
@@ -211,14 +219,14 @@
                     const testLine = currentLine + words[n] + ' ';
                     const metrics = ctx.measureText(testLine);
                     if (metrics.width > maxWidth && n > 0) {
-                        ctx.fillText(currentLine, 256, y);
+                        ctx.fillText(currentLine, 512, y); // Center is now 512
                         currentLine = words[n] + ' ';
                         y += lineHeight;
                     } else {
                         currentLine = testLine;
                     }
                 }
-                ctx.fillText(currentLine, 256, y);
+                ctx.fillText(currentLine, 512, y);
                 y += lineHeight; 
             });
             return new THREE.CanvasTexture(canvas);
