@@ -184,9 +184,9 @@
         floorTexture.repeat.set(10, 10); 
 
         const ceilingTexture = textureLoader.load('images/Ceiling.jpg');
-        floorTexture.wrapS = THREE.RepeatWrapping;
-        floorTexture.wrapT = THREE.RepeatWrapping;
-        floorTexture.repeat.set(10, 10);
+        ceilingTexture.wrapS = THREE.RepeatWrapping;
+        ceilingTexture.wrapT = THREE.RepeatWrapping;
+        ceilingTexture.repeat.set(10, 10);
         
         const roomGeometry = new THREE.BoxGeometry(roomSize, 12, roomSize);
         
