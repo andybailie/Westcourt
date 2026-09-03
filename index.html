@@ -196,9 +196,8 @@
         const floorMaterial = new THREE.MeshStandardMaterial({ 
             map: floorTexture, color: 0xcccccc, side: THREE.BackSide 
         });
-        const ceilingMaterial = textureLoader.load('images/floor.jpg');
-        floorTexture.wrapT = THREE.RepeatWrapping;
-        floorTexture.repeat.set(10, 10); 
+        const ceilingMaterial = new THREE.MeshStandardMaterial({ 
+            map: floorTexture, color: 0xcccccc, side: THREE.BackSide 
         });
         
         const roomMaterials = [wallMaterial, wallMaterial, ceilingMaterial, floorMaterial, wallMaterial, wallMaterial];
