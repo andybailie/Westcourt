@@ -299,6 +299,29 @@
             easelGroup.rotation.y = pos.rotY;
             easels.add(easelGroup);
         });
+        // ==========================================
+// 4.5. TOP BANNER IMAGE
+// ==========================================
+// Aspect Ratio Math: 3000 / 884 = 3.3936
+// If we set the width in the 3D world to 24 units, the height must be 24 / 3.3936 = ~7.07
+const bannerWidth = 24;
+const bannerHeight = 7.07;
+
+const bannerGeo = new THREE.PlaneGeometry(bannerWidth, bannerHeight);
+const bannerMat = new THREE.MeshBasicMaterial({ 
+    map: textureLoader.load('images/your-wide-image.jpg'), // Update with your actual filename
+    side: THREE.DoubleSide 
+});
+
+const bannerMesh = new THREE.Mesh(bannerGeo, bannerMat);
+
+// Position it on the Back Wall (above the first 4 easels)
+// x = 0 (centered)
+// y = 8.5 (high up, near the ceiling, above the easels which sit at y=2.5)
+// z = -19.9 (just a fraction in front of the actual back wall at -20 to prevent Z-fighting flickering)
+bannerMesh.position.set(0, 8.5, -19.9);
+
+scene.add(bannerMesh);
 
         // ==========================================
         // 5. AUDIO PLAYBACK FUNCTION 
