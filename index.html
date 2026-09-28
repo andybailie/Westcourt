@@ -416,54 +416,81 @@ easels.add(introBtnGroup);
         // 5. AUDIO PLAYBACK FUNCTION 
         // ==========================================
         
-        // --- BACKGROUND MUSIC ---
+        // --- BACKGROUND MUSIC & DUCKING CONFIGURATION ---
+        const BG_NORMAL_VOL = 0.07; // 7% volume
+        const BG_DUCKED_VOL = 0.02; // 2% volume
         const bgMusic = new Audio("audio/background.mp3");
         bgMusic.loop = true;
-        bgMusic.volume = 0.07; // 07% volume
+        bgMusic.volume = BG_NORMAL_VOL; 
 
         let bgMusicStarted = false;
+        let duckInterval;
+
         function startBgMusic() {
             if (!bgMusicStarted) {
                 let playPromise = bgMusic.play();
                 
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
-                        // Success! The browser allowed the audio to play.
                         bgMusicStarted = true;
-                        
-                        // Now we can safely remove the listeners
                         window.removeEventListener('click', startBgMusic);
                         window.removeEventListener('touchstart', startBgMusic);
                         window.removeEventListener('touchend', startBgMusic);
                     }).catch(error => {
-                        // Browser blocked it (likely a touchstart). 
-                        // Do nothing, let it try again on the next tap or touchend.
                         console.log("Awaiting valid user tap to start music.");
                     });
                 }
             }
         }
         
-        // Listen for all types of interaction to catch the one the mobile browser accepts
         window.addEventListener('click', startBgMusic);
         window.addEventListener('touchstart', startBgMusic);
         window.addEventListener('touchend', startBgMusic);
 
+        // Smooth volume fader
+        function fadeBgVolume(targetVolume) {
+            if (!bgMusicStarted) return;
+            clearInterval(duckInterval);
+            
+            duckInterval = setInterval(() => {
+                const diff = targetVolume - bgMusic.volume;
+                // If close enough, snap to target and clear
+                if (Math.abs(diff) < 0.005) {
+                    bgMusic.volume = targetVolume;
+                    clearInterval(duckInterval);
+                } else {
+                    bgMusic.volume += diff > 0 ? 0.005 : -0.005;
+                }
+            }, 50); // Adjust interval for fade speed
+        }
 
         // --- EXHIBIT AUDIO ---
         let currentAudio = null;
         function playAudio(buttonObject) {
             const url = buttonObject.userData.audioUrl;
+            
             if (currentAudio) {
                 currentAudio.pause();
                 currentAudio.currentTime = 0;
             }
+            
             const originalColor = buttonObject.material.color.getHex();
             buttonObject.material.color.setHex(0xffffff);
             setTimeout(() => buttonObject.material.color.setHex(originalColor), 200);
 
             currentAudio = new Audio(url);
+            
+            // Fade background music down when track starts
+            fadeBgVolume(BG_DUCKED_VOL);
+
             currentAudio.play().catch(e => console.log("Audio playback error.", e));
+            
+            // Fade background music back up when track ends
+            currentAudio.addEventListener('ended', () => {
+                // Ensure we only fade up if this is still the active audio 
+                // (prevents weirdness if user clicks a new track while the old one was about to end)
+                fadeBgVolume(BG_NORMAL_VOL);
+            });
         }
 
         // ==========================================
