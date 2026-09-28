@@ -357,7 +357,7 @@ const introBtnMesh = new THREE.Mesh(
 // Bind it to your existing audio playback logic
 introBtnMesh.userData = { 
     isAudioButton: true, 
-    audioUrl: "audio/your-intro-file.mp3" // Replace with actual intro audio path
+    audioUrl: "audio/intro.m4a" // Replace with actual intro audio path
 };
 
 // 4. Create the text overlay plane
@@ -389,7 +389,7 @@ easels.add(introBtnGroup);
         // --- BACKGROUND MUSIC ---
         const bgMusic = new Audio("audio/background.mp3");
         bgMusic.loop = true;
-        bgMusic.volume = 0.15; // 15% volume
+        bgMusic.volume = 0.10; // 10% volume
 
         let bgMusicStarted = false;
         function startBgMusic() {
