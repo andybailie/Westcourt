@@ -256,6 +256,25 @@
             return new THREE.CanvasTexture(canvas);
         }
 
+        // New function to create the 'Listen' text texture for buttons
+        function createListenTextTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            
+            // Clear transparent background
+            ctx.clearRect(0, 0, 256, 128); 
+            
+            ctx.fillStyle = '#000000'; // Black text
+            ctx.font = 'bold 48px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Listen', 128, 64);
+            
+            return new THREE.CanvasTexture(canvas);
+        }
+
         const easels = new THREE.Group();
         scene.add(easels);
 
@@ -294,7 +313,18 @@
             btnMesh.position.set(1.5, 1, 0);
             btnMesh.userData = { isAudioButton: true, audioUrl: data.audio };
 
-            easelGroup.add(imgMesh, borderMesh, textMesh, textBorder, btnMesh);
+            // Create the 'Listen' text overlay for this exhibit button
+            const listenTextMesh = new THREE.Mesh(
+                new THREE.PlaneGeometry(1.5, 0.5),
+                new THREE.MeshBasicMaterial({ 
+                    map: createListenTextTexture(), 
+                    transparent: true 
+                })
+            );
+            // Push the text just slightly in front of the grey box to prevent z-fighting
+            listenTextMesh.position.set(1.5, 1, 0.11); 
+
+            easelGroup.add(imgMesh, borderMesh, textMesh, textBorder, btnMesh, listenTextMesh);
             easelGroup.position.set(pos.x, 0, pos.z);
             easelGroup.rotation.y = pos.rotY;
             easels.add(easelGroup);
