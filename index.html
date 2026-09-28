@@ -322,6 +322,65 @@ const bannerMesh = new THREE.Mesh(bannerGeo, bannerMat);
 bannerMesh.position.set(0, 8.5, -19.9);
 
 scene.add(bannerMesh);
+        // ==========================================
+// 4.6. INTRO AUDIO BUTTON
+// ==========================================
+
+// 1. Create a quick canvas texture for the "Intro" text
+function createIntroTextTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    
+    // Transparent background so the green block underneath shows through
+    ctx.clearRect(0, 0, 256, 128); 
+    
+    ctx.fillStyle = '#ffffff'; // White text
+    ctx.font = 'bold 48px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Intro', 128, 64);
+    
+    return new THREE.CanvasTexture(canvas);
+}
+
+// 2. Create the button group
+const introBtnGroup = new THREE.Group();
+
+// 3. Create the clickable green block (matches easel buttons)
+const introBtnMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(2, 0.8, 0.2), 
+    new THREE.MeshStandardMaterial({ color: 0x28a745 })
+);
+
+// Bind it to your existing audio playback logic
+introBtnMesh.userData = { 
+    isAudioButton: true, 
+    audioUrl: "audio/your-intro-file.mp3" // Replace with actual intro audio path
+};
+
+// 4. Create the text overlay plane
+const introTextMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 0.8),
+    new THREE.MeshBasicMaterial({ 
+        map: createIntroTextTexture(), 
+        transparent: true 
+    })
+);
+// Push the text just slightly in front of the green box to prevent z-fighting
+introTextMesh.position.z = 0.11; 
+
+// 5. Assemble and position
+introBtnGroup.add(introBtnMesh, introTextMesh);
+
+// Position it to the right of the banner. 
+// Banner center is x=0, width is 16, so right edge is x=8. 
+// Placing this at x=10 leaves a clean 2-unit gap.
+introBtnGroup.position.set(10, 8, -19.8);
+
+// CRITICAL: Add to the 'easels' group so the raycaster detects the click/VR laser
+easels.add(introBtnGroup);
 
         // ==========================================
         // 5. AUDIO PLAYBACK FUNCTION 
